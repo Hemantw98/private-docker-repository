@@ -1,72 +1,25 @@
-## demo app - developing with Docker
+## Private Docker Repository
 
-This demo app shows a simple user profile app set up using 
-- index.html with pure js and css styles
-- nodejs backend with express module
-- mongodb for data storage
+### Pushing our Docker Image into a private Registry on AWS.
 
-All components are docker-based
+#### Here are the steps to push a Docker image to a private registry on AWS:
 
-### With Docker
+Step 1: First, ensure that we have a Docker image that you want to push to the private registry. If we don't have an image, we can create one using a Dockerfile.
 
-#### To start the application
+Step 2: Next, create an Amazon Elastic Container Registry (ECR) repository to store your Docker image. We can do this by logging into the AWS Management Console, selecting the ECR service, and clicking "Create repository."
 
-Step 1: Create docker network
+Step 3: Once we have created the repository, we'll need to authenticate Docker with the registry. We can do this by running the following command in our terminal, replacing <your-registry-url> with the URL of our registry:
 
-    docker network create mongo-network 
+    aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-registry-url>
 
-Step 2: start mongodb 
+Step 4 : Now that Docker is authenticated with the registry, we can tag your Docker image with the registry URL. We can do this by running the following command, replacing <your-image-name> with the name of your Docker image and <your-registry-url> with the URL of your registry:
 
-    docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password --name mongodb --net mongo-network mongo    
+    docker tag <your-image-name> <your-registry-url>/<your-image-name>
 
-Step 3: start mongo-express
-    
-    docker run -d -p 8081:8081 -e ME_CONFIG_MONGODB_ADMINUSERNAME=admin -e ME_CONFIG_MONGODB_ADMINPASSWORD=password --net mongo-network --name mongo-express -e ME_CONFIG_MONGODB_SERVER=mongodb mongo-express   
+Step 5: Finally, we can push your Docker image to the private registry by running the following command, replacing <your-registry-url> and <your-image-name> with the URL and name of our registry and image, respectively:
 
-_NOTE: creating docker-network in optional. You can start both containers in a default network. In this case, just emit `--net` flag in `docker run` command_
+    docker push <your-registry-url>/<your-image-name>
 
-Step 4: open mongo-express from browser
+Once the image has been pushed, we can confirm that it's available in your ECR repository by logging into the AWS Management Console, selecting the ECR service, and navigating to your repository.
 
-    http://localhost:8081
-
-Step 5: create `user-account` _db_ and `users` _collection_ in mongo-express
-
-Step 6: Start your nodejs application locally - go to `app` directory of project 
-
-    cd app
-    npm install 
-    node server.js
-    
-Step 7: Access you nodejs application UI from browser
-
-    http://localhost:3000
-
-### With Docker Compose
-
-#### To start the application
-
-Step 1: start mongodb and mongo-express
-
-    docker-compose -f docker-compose.yaml up
-    
-_You can access the mongo-express under localhost:8080 from your browser_
-    
-Step 2: in mongo-express UI - create a new database "my-db"
-
-Step 3: in mongo-express UI - create a new collection "users" in the database "my-db"       
-    
-Step 4: start node server 
-
-    cd app
-    npm install
-    node server.js
-    
-Step 5: access the nodejs application from browser 
-
-    http://localhost:3000
-
-#### To build a docker image from the application
-
-    docker build -t my-app:1.0 .       
-    
-The dot "." at the end of the command denotes location of the Dockerfile.
+ 
